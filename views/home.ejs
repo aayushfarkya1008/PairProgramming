@@ -100,6 +100,7 @@
     <div id="buttons">
         <input id = "compile" type="button" name="Compile" value="compile" onclick="compile()"/>
         <input type="button" name="Submit" value="submit"  onclick="submit()"/>
+        <input type="button" name="Custom" text="newtext"  value="custom I/P" onclick="myFunction(), switchVisible()"/>
         <input type="hidden" id="myField" name="text" value="{{this.text}}" />
     
         </div>   
@@ -147,12 +148,16 @@
       
 </div>
       
+    
+    
+    
     <script>
         var socket;
         var langid;
         var editor;
         var editor2;
         var url ;
+        var cust =0;
         //filter: blur(10px);
         $(document).ready(function(){
 
@@ -386,18 +391,19 @@
         }
 
        function compile(){
-            $('#status').text("");
-            $('#compiling').text("compiling...");
-            $('.loader').show();
-            let text = editor.getValue();
-            let sampleInput = $('#sampleinput').text();
-            let sampleOutput  = $('#sampleoutput').text();
-            postData = {
-                code: text,
-                sampleInput: sampleInput,
-                sampleOutput: sampleOutput,
-                type:'compile'
-            }
+            if(cust==0){
+                $('#status').text("");
+                $('#compiling').text("compiling...");
+                $('.loader').show();
+                let text = editor.getValue();
+                let sampleInput = $('#sampleinput').text();
+                let sampleOutput  = $('#sampleoutput').text();
+                postData = {
+                    code: text,
+                    sampleInput: sampleInput,
+                    sampleOutput: sampleOutput,
+                    type:'compile'
+                }
             $.ajax({
                 type: "POST",
                 url: "/",
@@ -405,15 +411,45 @@
                 success: getCompileData,
                 dataType: 'json',
                 langid: langid
-            });
+                });
             //document.getElementById('myField').value = text;
             //console.log(document.getElementById('myField').value);
+            }
+            else if(cust==1){
+
+                $('#status').text("");
+                $('#compiling').text("CUSTMCHECK.");
+                $('.container').show();
+                let sampleOutput= 10 ;
+                let text = editor.getValue();
+                let sampleInput =document.getElementById("area1").value;
+                sampleOutput: sampleOutput,            
+                console.log(sampleInput);
+
+                postData = {
+                    code: text,
+                    sampleInput: sampleInput,
+                    sampleOutput: sampleOutput,
+                    type:'customCompile'
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/",
+                    data: postData,
+                    success: getCompileData,
+                    dataType: 'json',
+                    langid: langid
+                });
+
+            }
+    
         }
         function getCompileData(data)  {
             $('.loader').hide();
             console.log(data)
             $('#status').text(data.compileData.status);
             $('#youroutput').text(data.compileData.result);
+            document.getElementById("area3").value = data.compileData.result;
         }
 
         function submit(){
@@ -435,6 +471,48 @@
                 langid: langid
             });
         }
+
+        function myFunction() {
+            if(cust==0){
+                cust=1;
+                var x = document.createElement("TEXTAREA");
+                x.setAttribute("id", "area1");
+                x.setAttribute("class", "area2");
+
+                var y = document.createElement("TEXTAREA");
+                y.setAttribute("id", "area3");
+                y.setAttribute("class", "area4");
+
+                var t = document.createTextNode("");
+                x.appendChild(t);
+                document.body.appendChild(x);
+                y.appendChild(t);
+                document.body.appendChild(y);
+                
+            }
+           
+            }
+
+
+            function switchVisible() {
+                if (document.getElementById('result-wrapper')) {
+
+                    if (document.getElementById('result-wrapper').style.display == 'none') {
+                        document.getElementById('result-wrapper').style.display = 'block';
+                        document.getElementById('area1').style.display = 'none';
+                        document.getElementById('area3').style.display = 'none';
+                        cust=0;
+                    }
+                    else {
+                        document.getElementById('result-wrapper').style.display = 'none';
+                        document.getElementById('area1').style.display = 'block';
+                        document.getElementById('area3').style.display = 'block';
+                        cust = 1;
+                    }
+                }
+            }
+        
+        
         function connectToUser(obj){
             var friendsId = obj.getAttribute('data-myid');
             var privateConnection ={
